@@ -1,0 +1,3 @@
+# Test utilities
+mypy~=0.910
+flake8~=4.0.1
