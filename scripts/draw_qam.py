@@ -19,7 +19,7 @@ def draw_plots(error_rates):
 
     # ax = plt.axis()
     # plt.axis((ax[0], ax[1], ax[3], ax[2]))
-    plt.savefig('images/qam_ber.png')
+    plt.savefig('images/qam_ser.png')
 
 
 def get_error_rates():
@@ -42,8 +42,12 @@ def get_error_rates():
             noised = encoded + \
                      np.random.normal(0., np.sqrt(n0 / 2), encoded.shape)
             decoded = modulator.decode(noised)
-            ber = (decoded != message).sum() / len(message)
-            error_rates[name].append((energy / n0, ber))
+            error_count = \
+                ((decoded != message).
+                 reshape((-1, modulator.bit_count)).
+                 sum(axis=1) != 0).sum()
+            error_rate = error_count / (len(message) / modulator.bit_count)
+            error_rates[name].append((energy / n0, error_rate))
     return error_rates
 
 
