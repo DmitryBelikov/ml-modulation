@@ -3,9 +3,9 @@ from abc import ABCMeta, abstractmethod
 
 class Modulator(metaclass=ABCMeta):
     @abstractmethod
-    def encode(self) -> None:
+    def encode(self, raw):
         raise NotImplementedError
 
     @abstractmethod
-    def decode(self) -> None:
+    def decode(self, encoded):
         raise NotImplementedError
