@@ -5,7 +5,7 @@ from .interfaces import Modulator
 
 
 class QAM(Modulator):
-    def __init__(self, bit_count, amplitude=1.):
+    def __init__(self, bit_count):
         if bit_count % 2 != 0:
             raise ModulationException(
                 f'QAM defined for even bit_counts only. '
@@ -17,9 +17,11 @@ class QAM(Modulator):
         for value in range(self.values_count):
             first_digit = value // base
             second_digit = value % base
-            first_signal = amplitude * (1 - 2 * first_digit / (base - 1))
-            second_signal = amplitude * (1 - 2 * second_digit / (base - 1))
+            first_signal = (1 - 2 * first_digit / (base - 1))
+            second_signal = (1 - 2 * second_digit / (base - 1))
             self.digit_mapping[value] = np.array([first_signal, second_signal])
+        total_energy = (self.digit_mapping ** 2).sum()
+        self.digit_mapping /= np.sqrt(total_energy)
 
     def encode(self, bits):
         if len(bits) % self.bit_count != 0:
@@ -47,18 +49,3 @@ class QAM(Modulator):
             current_bits = np.unpackbits(np.array(closest_value, dtype='ubyte'))
             bit_lines.append(current_bits[8 - self.bit_count:])
         return np.concatenate(bit_lines)
-
-
-# class QAM16(QAM):
-#     def __init___(self, bit_count=4, amplitude=1.):
-#         super().__init__(bit_count, amplitude)
-#
-#
-# class QAM64(QAM):
-#     def __init___(self, bit_count=6, amplitude=1.):
-#         super().__init__(bit_count, amplitude)
-#
-#
-# class QAM256(QAM):
-#     def __init___(self, bit_count=8, amplitude=1.):
-#         super().__init__(bit_count, amplitude)

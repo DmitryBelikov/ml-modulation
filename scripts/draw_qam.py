@@ -14,7 +14,7 @@ def draw_plots(error_rates):
 
     plt.legend()
     plt.yscale('log')
-    plt.xlabel('E / N0')
+    plt.xlabel('SNR [dB]')
     plt.ylabel('Bit error rate')
 
     # ax = plt.axis()
@@ -27,23 +27,19 @@ def get_error_rates():
     qam16 = QAM(4)
     qam64 = QAM(6)
     qam256 = QAM(8)
-    message = np.array([0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1]
-                       * 3 * 1024 * 16)
+    message = np.random.choice([0, 1], size=48 * 1024)
     names = ['qam4', 'qam16', 'qam64', 'qam256']
     modulators = [qam4, qam16, qam64, qam256]
     encodings = [modulator.encode(message) for modulator in modulators]
-    energies = [2 / 3 * (modulator.bit_count + 1) / (modulator.bit_count - 1)
-                for modulator in modulators]
     error_rates = {name: [] for name in names}
-    for edivN0 in np.arange(0.2, 16, .3):
-        for name, energy, encoded, modulator in zip(names, energies, encodings,
-                                                    modulators):
-            n0 = energy / edivN0
-            noised = encoded + \
-                     np.random.normal(0., np.sqrt(n0 / 2), encoded.shape)
+    for snr in np.arange(0., 50., 1.):
+        n0 = 1 / 10 ** (snr / 10)
+        for name, encoded, modulator in zip(names, encodings, modulators):
+            noised = encoded + np.random.normal(0., np.sqrt(n0), encoded.shape)
             decoded = modulator.decode(noised)
-            ber = (decoded != message).sum() / len(message)
-            error_rates[name].append((energy / n0, ber))
+            error_count = (decoded != message).sum()
+            error_rate = error_count / (len(message) / modulator.bit_count)
+            error_rates[name].append((snr, error_rate))
     return error_rates
 
 
