@@ -22,8 +22,16 @@ class QAM(Modulator):
             self.digit_mapping[value] = np.array([first_signal, second_signal])
         total_energy = (self.digit_mapping ** 2).sum()
         self.digit_mapping /= np.sqrt(total_energy)
+        self.digit_mapping *= (2 ** (bit_count // 2))
 
-    def encode(self, bits):
+    def encode(self, class_index):
+        return self.digit_mapping[class_index]
+
+    def decode(self, xy):
+        position = np.argmin(np.linalg.norm(self.digit_mapping - xy, axis=1))
+        return position
+
+    def encode_bits(self, bits):
         if len(bits) % self.bit_count != 0:
             raise EncodingException(
                 'Length of bits array should be divisible '
@@ -41,7 +49,7 @@ class QAM(Modulator):
                 current_number = 0
         return np.array(result)
 
-    def decode(self, encoded):
+    def decode_bits(self, encoded):
         bit_lines = []
         for xy in encoded:
             closest_value = \

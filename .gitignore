@@ -1,4 +1,7 @@
 notebooks/logs
+logs/
+model_storage/
+new_model_storage/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
