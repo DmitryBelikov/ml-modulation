@@ -3,6 +3,8 @@ import torch.nn as nn
 import pytorch_lightning as pl
 import torchmetrics
 
+from .noise import AwgnNoise, ClippingNoise
+
 
 class Modulator(pl.LightningModule):
     def __init__(self, encoder, decoder, noise):
@@ -18,7 +20,9 @@ class Modulator(pl.LightningModule):
         noised = self.noise(encoded)
         return self.decoder(noised)
 
+    @torch.no_grad()
     def measure_error(self, dataloader, repeat=1000):
+        self.eval()
         correct = 0
         total = 0
         for _ in range(repeat):
@@ -30,6 +34,18 @@ class Modulator(pl.LightningModule):
                 correct += (prediction == true_classes).detach().cpu().sum().item()
                 total += batch.shape[0]
         return 1 - correct / total
+
+    @torch.no_grad()
+    def test_snrs(self, dataloader, snrs, noise_name):
+        result = {}
+        default_noise = self.noise
+        for snr in snrs:
+            noise = AwgnNoise(snr) if noise_name == 'awgn' else ClippingNoise(snr)
+            self.noise = noise
+            error = self.measure_error(dataloader)
+            result[snr] = error
+        self.noise = default_noise
+        return result
 
     def training_step(self, batch, batch_idx):
         decoded = self(batch)

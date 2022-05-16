@@ -2,6 +2,7 @@ notebooks/logs
 logs/
 model_storage/
 new_model_storage/
+images/constellations
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

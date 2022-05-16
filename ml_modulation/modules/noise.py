@@ -8,9 +8,9 @@ class AwgnNoise(pl.LightningModule):
         super().__init__()
         self.sigma = np.sqrt(1 / (2 * 10 ** (snr / 10)))
 
-    def forward(self, x):
-        return x + torch.normal(torch.zeros_like(x, device=self.device),
-                                torch.full_like(x, self.sigma, device=self.device))
+    def forward(self, x, multiplier=1.):
+        return x + multiplier * torch.normal(torch.zeros_like(x, device=self.device),
+                                             torch.full_like(x, self.sigma, device=self.device))
 
 
 class Clipper(pl.LightningModule):
